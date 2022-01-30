@@ -1,0 +1,22 @@
+- name: Set interface naming via kernel launch options
+  gather_facts: false
+  hosts: apache
+  become: yes
+  vars_files:
+    - vars
+  tasks:
+
+    - name: add options to {{ default_grub }}
+      lineinfile:
+        path: "{{ default_grub }}"
+        regexp: '^(GRUB_CMDLINE_LINUX=(?!.*{{ options }})\"[^\"]+)(\".*)'
+        line: '\1{{ options }}\2'
+        backrefs: yes
+
+    - name: run {{grub_command}}
+      command: "{{ grub_command }}"
+      register: grub_output
+
+    - name: show stderr of {{ grub_command }}
+      debug:
+        var: grub_output["stderr"]

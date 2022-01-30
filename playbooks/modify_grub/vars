@@ -1,0 +1,3 @@
+default_grub: /etc/default/grub
+options: " net.ifnames=0 biosdevname=0"
+grub_command: grub2-mkconfig
