@@ -38,21 +38,11 @@
       debug:
         var: httpd_state
 
-    - name: remove index.html
-      file:
-        path: "{{ index_path }}"
-        state: absent
-
-    - name: touch index.html
-      file:
-        path: "{{ index_path }}"
-        state: touch
-
-    - name: fill index.html
-      lineinfile:
-        path: "{{ index_path }}"
-        line: "{{ index_text }}"
-
+    - name: create index.html from template
+      template:
+        src: index.j2
+        dest: "{{ index_path }}"
+        
     - name: open http via firewalld
       firewalld:
         zone: public
