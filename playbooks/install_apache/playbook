@@ -1,0 +1,70 @@
+- name: Install Apache web server
+  gather_facts: false
+  hosts: apache
+  become: yes
+  vars_files:
+    - vars
+  tasks:
+
+    - name: install httpd package
+      yum:
+        name: httpd
+        state: present
+
+    - name: start httpd service
+      service:
+        name: httpd
+        state: started
+        enabled: yes
+
+    - name: get info about services
+      service_facts:
+      register: services_info
+
+    - name: set fact
+      set_fact:
+        httpd_state: >
+          '{{ vars["services_info"]["ansible_facts"]["services"]
+          ["httpd.service"]["state"] }}'
+
+    - block:
+        - name: stop playbook if httpd is not running
+          debug:
+            var: httpd_state
+        - meta: end_play
+      when: httpd_state != "'running'\n"
+
+    - name: continue playbook if httpd is running and show status
+      debug:
+        var: httpd_state
+
+    - name: remove index.html
+      file:
+        path: "{{ index_path }}"
+        state: absent
+
+    - name: touch index.html
+      file:
+        path: "{{ index_path }}"
+        state: touch
+
+    - name: fill index.html
+      lineinfile:
+        path: "{{ index_path }}"
+        line: "{{ index_text }}"
+
+    - name: open http via firewalld
+      firewalld:
+        zone: public
+        service: http
+        permanent: yes
+        state: enabled
+        immediate: yes
+
+    - name: open https via firewalld
+      firewalld:
+        zone: public
+        service: https
+        permanent: yes
+        state: enabled
+        immediate: yes
