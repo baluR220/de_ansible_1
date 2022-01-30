@@ -1,4 +1,4 @@
-*
+/*
 !.gitignore
 !inventory.yml
-!playbooks
+!playbooks/
